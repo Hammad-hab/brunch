@@ -17,6 +17,10 @@
         "*.gen": "json",
         "stdlib.h": "c",
         "prompt.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "cursorfont.h": "c",
+        "xutil.h": "c",
+        "poll.h": "c",
+        "file.h": "c"
     }
 }

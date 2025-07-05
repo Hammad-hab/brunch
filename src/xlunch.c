@@ -2,42 +2,26 @@
 // Licence: GNU GPL v3
 // Authors: Tomas Matejicek <www.slax.org>
 //          Peter Munch-Ellingsen <www.peterme.net>
-const int VERSION_MAJOR = 4; // Major version, changes when breaking backwards compatability
-const int VERSION_MINOR = 7; // Minor version, changes when new functionality is added
-const int VERSION_PATCH = 5; // Patch version, changes when something is changed without changing deliberate functionality (eg. a bugfix or an optimisation)
 
 #define _GNU_SOURCE
-/* open and O_RDWR,O_CREAT */
 #include <fcntl.h>
-/* include X11 stuff */
 #include <X11/Xlib.h>
-/* include Imlib2 stuff */
 #include <Imlib2.h>
-/* basename include */
 #include <libgen.h>
-/* sprintf include */
 #include <stdio.h>
-/* strcpy include */
 #include <string.h>
-/* exit include */
 #include <stdlib.h>
-/* exec include */
 #include <unistd.h>
-/* long options include*/
 #include <X11/cursorfont.h>
-/* X utils */
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
-/* parse commandline arguments */
 #include <ctype.h>
-/* one instance */
 #include <sys/file.h>
 #include <sys/stat.h>
-/* check stdin */
 #include <sys/poll.h>
 #include "prompt.c"
+#include "utils.c"
 #include <errno.h>
-
 /* some globals for our window & X display */
 Display *disp;
 Window   win;
@@ -139,7 +123,7 @@ int stdin_poll_timeout = 10;
 #define MOUSE 1
 #define KEYBOARD 2
 int hoverset=MOUSE;
-int desktop_mode=0;
+int desktop_mode=1;
 int lock;
 
 /* areas to update */
@@ -432,69 +416,6 @@ void cleanup()
     }
 }
 
-
-Imlib_Image load_image(char * icon) {
-    Imlib_Load_Error load_error;
-    Imlib_Image image = imlib_load_image_with_error_return(icon, &load_error);
-    if(image) {
-        imlib_context_set_image(image);
-        imlib_free_image();
-    } else {
-        fprintf(stderr, "Could not load icon %s, Imlib failed with: ", icon);
-        switch(load_error) {
-            case IMLIB_LOAD_ERROR_NONE:
-                fprintf(stderr, "IMLIB_LOAD_ERROR_NONE");
-                break;
-            case IMLIB_LOAD_ERROR_FILE_DOES_NOT_EXIST:
-                fprintf(stderr, "IMLIB_LOAD_ERROR_FILE_DOES_NOT_EXIST");
-                break;
-            case IMLIB_LOAD_ERROR_FILE_IS_DIRECTORY:
-                fprintf(stderr, "IMLIB_LOAD_ERROR_FILE_IS_DIRECTORY");
-                break;
-            case IMLIB_LOAD_ERROR_PERMISSION_DENIED_TO_READ:
-                fprintf(stderr, "IMLIB_LOAD_ERROR_PERMISSION_DENIED_TO_READ");
-                break;
-            case IMLIB_LOAD_ERROR_NO_LOADER_FOR_FILE_FORMAT:
-                fprintf(stderr, "IMLIB_LOAD_ERROR_NO_LOADER_FOR_FILE_FORMAT");
-                break;
-            case IMLIB_LOAD_ERROR_PATH_TOO_LONG:
-                fprintf(stderr, "IMLIB_LOAD_ERROR_PATH_TOO_LONG");
-                break;
-            case IMLIB_LOAD_ERROR_PATH_COMPONENT_NON_EXISTANT:
-                fprintf(stderr, "IMLIB_LOAD_ERROR_PATH_COMPONENT_NON_EXISTANT");
-                break;
-            case IMLIB_LOAD_ERROR_PATH_COMPONENT_NOT_DIRECTORY:
-                fprintf(stderr, "IMLIB_LOAD_ERROR_PATH_COMPONENT_NOT_DIRECTORY");
-                break;
-            case IMLIB_LOAD_ERROR_PATH_POINTS_OUTSIDE_ADDRESS_SPACE:
-                fprintf(stderr, "IMLIB_LOAD_ERROR_PATH_POINTS_OUTSIDE_ADDRESS_SPACE");
-                break;
-            case IMLIB_LOAD_ERROR_TOO_MANY_SYMBOLIC_LINKS:
-                fprintf(stderr, "IMLIB_LOAD_ERROR_TOO_MANY_SYMBOLIC_LINKS");
-                break;
-            case IMLIB_LOAD_ERROR_OUT_OF_MEMORY:
-                fprintf(stderr, "IMLIB_LOAD_ERROR_OUT_OF_MEMORY");
-                break;
-            case IMLIB_LOAD_ERROR_OUT_OF_FILE_DESCRIPTORS:
-                fprintf(stderr, "IMLIB_LOAD_ERROR_OUT_OF_FILE_DESCRIPTORS");
-                break;
-            case IMLIB_LOAD_ERROR_PERMISSION_DENIED_TO_WRITE:
-                fprintf(stderr, "IMLIB_LOAD_ERROR_PERMISSION_DENIED_TO_WRITE");
-                break;
-            case IMLIB_LOAD_ERROR_OUT_OF_DISK_SPACE:
-                fprintf(stderr, "IMLIB_LOAD_ERROR_OUT_OF_DISK_SPACE");
-                break;
-            case IMLIB_LOAD_ERROR_UNKNOWN:
-                fprintf(stderr, "IMLIB_LOAD_ERROR_UNKNOWN");
-                break;
-        }
-        fprintf(stderr, "\n");
-        /*
-        cleanup();
-        exit(1);*/
-    }
-    return image;
-}
 
 
 void push_entry(node_t * new_entry)//(char * title, char * icon, char * cmd, int x, int y)
@@ -1993,7 +1914,7 @@ int main(int argc, char **argv){
     // Get the FD of the X11 display
     x11_fd = ConnectionNumber(disp);
     eventfds[0].fd = x11_fd;
-    eventfds[0].events = POLLIN || POLLPRI || POLLOUT;
+    eventfds[0].events = POLLIN | POLLPRI | POLLOUT;
     if(input_source == stdin) {
         eventfds[1].fd = 0; /* this is STDIN */
         eventfds[1].events = POLLIN;
@@ -2020,7 +1941,7 @@ int main(int argc, char **argv){
             exit(POLLERROR);
         } else {
             if(input_source == stdin && eventfds[1].revents != 0){
-                int changed = parse_entries(input_source);
+                int changed = parse_entries();
                 if(changed){
                     updates = imlib_update_append_rect(updates, 0, 0, screen_width, screen_height);
                 }
