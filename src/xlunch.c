@@ -35,7 +35,7 @@ const int VERSION_PATCH = 5; // Patch version, changes when something is changed
 #include <sys/stat.h>
 /* check stdin */
 #include <sys/poll.h>
-#include "prompt.h"
+#include "prompt.c"
 #include <errno.h>
 
 /* some globals for our window & X display */
