@@ -10,7 +10,7 @@ os.environ['DISPLAY'] = ':0'
 
 RMODE = True if len(sys.argv) > 1 else False
 
-if not os.path.isfile('./xlunch'):
+if not os.path.isfile('./brunch'):
     print('Make file not found, building app...')
     os.system("make") # build the package
 
@@ -60,8 +60,8 @@ def generate_dsv():
             reasources = (os.listdir(path))
             reasources = [reasource for reasource in reasources if '.icns' in reasource]
             icon = f'/Applications/{app}/Contents/Resources/{reasources[0]}' 
-            os.system(f'sips -s format png "{icon}" --out /tmp/.xlunch/{name.replace(" ", "_")}.png')
-            dsv += f'{name};/tmp/.xlunch/{name.replace(" ", "_")}.png;open /Applications/{app}\n'
+            os.system(f'sips -s format png "{icon}" --out /tmp/.brunch/{name.replace(" ", "_")}.png')
+            dsv += f'{name};/tmp/.brunch/{name.replace(" ", "_")}.png;open /Applications/{app}\n'
 
     elif sys.platform == 'linux':
         dir_path = '/usr/share/applications'
@@ -107,18 +107,18 @@ def generate_dsv():
                 dsv += f'{name};{icon_path};{exec_cmd}\n'
     return dsv
 
-if not os.path.isdir('/tmp/.xlunch'):
-    os.mkdir('/tmp/.xlunch')
+if not os.path.isdir('/tmp/.brunch'):
+    os.mkdir('/tmp/.brunch')
 
-if not os.path.isfile('/tmp/.xlunch/entries.dsv') or RMODE:
+if not os.path.isfile('/tmp/.brunch/entries.dsv') or RMODE:
     print('Generating .dsv\nThis may take a few seconds')
     dsv = generate_dsv()
     # Write the DSV file
     MODE = '+x' # Create
-    if os.path.isfile('/tmp/.xlunch/entries.dsv'):
+    if os.path.isfile('/tmp/.brunch/entries.dsv'):
         MODE = 'w' # Write
 
-    with open('/tmp/.xlunch/entries.dsv', MODE) as f:
+    with open('/tmp/.brunch/entries.dsv', MODE) as f:
         f.write(dsv)
 
-os.system('./xlunch --input /tmp/.xlunch/entries.dsv')
+os.system('./brunch --input /tmp/.brunch/entries.dsv')

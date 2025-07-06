@@ -9,7 +9,7 @@
 #define CONFIG
 
 void handle_option(int c, char *optarg);
-int icon_size = 48;
+int icon_size = 64;
 int ucolumns = 0;
 int columns;
 int urows = 0;
@@ -38,7 +38,7 @@ char *highlight_file = "";
 char *input_file = "";
 int read_config = 0;
 FILE *input_source = NULL;
-char *prompt = "";
+char *prompt = "Search: ";
 char *font_name = "";
 char *prompt_font_name = "";
 char *program_name;

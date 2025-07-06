@@ -27,6 +27,8 @@
 #include "./utils/errutils.c"
 #include "./utils/strutils.c"
 
+#include "logo.c"
+
 /* some globals for our window & X display */
 Display *disp;
 Window win;
@@ -251,62 +253,61 @@ Imlib_Image load_image(char *icon)
     }
     else
     {
-        fprintf(stderr, "Could not load icon %s, Imlib failed with: ", icon);
         switch (load_error)
         {
         case IMLIB_LOAD_ERROR_NONE:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_NONE");
+            log_error("IMLIB_LOAD_ERROR_NONE");
             break;
         case IMLIB_LOAD_ERROR_IMAGE_READ:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_IMAGE_READ");
+            log_error("IMLIB_LOAD_ERROR_IMAGE_READ");
             break;
         case IMLIB_LOAD_ERROR_IMAGE_FRAME:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_IMAGE_FRAME");
+           log_error("IMLIB_LOAD_ERROR_IMAGE_FRAME");
             break;
         case IMLIB_LOAD_ERROR_FILE_DOES_NOT_EXIST:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_FILE_DOES_NOT_EXIST");
+           log_error("IMLIB_LOAD_ERROR_FILE_DOES_NOT_EXIST");
             break;
         case IMLIB_LOAD_ERROR_FILE_IS_DIRECTORY:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_FILE_IS_DIRECTORY");
+           log_error("IMLIB_LOAD_ERROR_FILE_IS_DIRECTORY");
             break;
         case IMLIB_LOAD_ERROR_PERMISSION_DENIED_TO_READ:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_PERMISSION_DENIED_TO_READ");
+           log_error("IMLIB_LOAD_ERROR_PERMISSION_DENIED_TO_READ");
             break;
         case IMLIB_LOAD_ERROR_NO_LOADER_FOR_FILE_FORMAT:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_NO_LOADER_FOR_FILE_FORMAT");
+           log_error("IMLIB_LOAD_ERROR_NO_LOADER_FOR_FILE_FORMAT");
             break;
         case IMLIB_LOAD_ERROR_PATH_TOO_LONG:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_PATH_TOO_LONG");
+           log_error("IMLIB_LOAD_ERROR_PATH_TOO_LONG");
             break;
         case IMLIB_LOAD_ERROR_PATH_COMPONENT_NON_EXISTANT:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_PATH_COMPONENT_NON_EXISTANT");
+           log_error("IMLIB_LOAD_ERROR_PATH_COMPONENT_NON_EXISTANT");
             break;
         case IMLIB_LOAD_ERROR_PATH_COMPONENT_NOT_DIRECTORY:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_PATH_COMPONENT_NOT_DIRECTORY");
+           log_error("IMLIB_LOAD_ERROR_PATH_COMPONENT_NOT_DIRECTORY");
             break;
         case IMLIB_LOAD_ERROR_PATH_POINTS_OUTSIDE_ADDRESS_SPACE:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_PATH_POINTS_OUTSIDE_ADDRESS_SPACE");
+           log_error("IMLIB_LOAD_ERROR_PATH_POINTS_OUTSIDE_ADDRESS_SPACE");
             break;
         case IMLIB_LOAD_ERROR_TOO_MANY_SYMBOLIC_LINKS:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_TOO_MANY_SYMBOLIC_LINKS");
+           log_error("IMLIB_LOAD_ERROR_TOO_MANY_SYMBOLIC_LINKS");
             break;
         case IMLIB_LOAD_ERROR_OUT_OF_MEMORY:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_OUT_OF_MEMORY");
+           log_error("IMLIB_LOAD_ERROR_OUT_OF_MEMORY");
             break;
         case IMLIB_LOAD_ERROR_OUT_OF_FILE_DESCRIPTORS:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_OUT_OF_FILE_DESCRIPTORS");
+           log_error("IMLIB_LOAD_ERROR_OUT_OF_FILE_DESCRIPTORS");
             break;
         case IMLIB_LOAD_ERROR_PERMISSION_DENIED_TO_WRITE:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_PERMISSION_DENIED_TO_WRITE");
+           log_error("IMLIB_LOAD_ERROR_PERMISSION_DENIED_TO_WRITE");
             break;
         case IMLIB_LOAD_ERROR_OUT_OF_DISK_SPACE:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_OUT_OF_DISK_SPACE");
+           log_error("IMLIB_LOAD_ERROR_OUT_OF_DISK_SPACE");
             break;
         case IMLIB_LOAD_ERROR_UNKNOWN:
-            fprintf(stderr, "IMLIB_LOAD_ERROR_UNKNOWN");
+           log_error("IMLIB_LOAD_ERROR_UNKNOWN");
             break;
         }
-        fprintf(stderr, "\n");
+       log_error("\n");
         /*
         cleanup();
         exit(1);*/
@@ -426,10 +427,10 @@ FILE *determine_input_source()
             if (fp == NULL)
             {
                 fprintf(stderr, "Error opening entries file %s\n", input_file);
-                fprintf(stderr, "You may need to create it. Icon file format is following:\n");
-                fprintf(stderr, "title;icon_path;command\n");
-                fprintf(stderr, "title;icon_path;command\n");
-                fprintf(stderr, "title;icon_path;command\n");
+               log_error("You may need to create it. Icon file format is following:\n");
+               log_error("title;icon_path;command\n");
+               log_error("title;icon_path;command\n");
+               log_error("title;icon_path;command\n");
             }
         }
         free(homeconf);
@@ -762,7 +763,7 @@ void run_command(char *cmd_orig)
     cmd = strdup(cmd_orig);
     if (!cmd)
     {
-        fprintf(stderr, "Out of memory!\n");
+       log_error("Out of memory!\n");
         exit(ALLOCERROR);
     }
 
@@ -1223,7 +1224,7 @@ void init(int argc, char **argv)
     disp = XOpenDisplay(NULL);
     if (!disp)
     {
-        fprintf(stderr, "Cannot connect to DISPLAY\n");
+       log_error("Cannot connect to DISPLAY\n");
         exit(WINERROR);
     }
 
@@ -1565,7 +1566,7 @@ void renderEntry(Imlib_Image buffer, char title[256], node_t *current, Cursor *c
     if (current->hovered)
     {
         if (hoverset == MOUSE)
-            *c = XCreateFontCursor(disp, XC_hand1);
+            *c = XCreateFontCursor(disp, XC_arrow);
 
         if (highlight)
         {
@@ -1660,7 +1661,6 @@ int main(int argc, char **argv)
 
     /* width and height values */
     int w, h, x, y;
-
     // set initial variables now
     init(argc, argv);
 
@@ -1684,7 +1684,7 @@ int main(int argc, char **argv)
         if (rc)
         {
             if (errno == EWOULDBLOCK)
-                fprintf(stderr, "brunch already running. You may want to consider --multiple\nIf this is an error, you may remove /tmp/brunch.lock\n");
+               log_error("I'm already running. You may want to consider --multiple\nIf this is an error, you may remove /tmp/brunch.lock\n");
             exit(LOCKERROR);
         }
     }
@@ -2092,6 +2092,7 @@ int main(int argc, char **argv)
                         imlib_context_set_blend(0);
                     }
                 }
+                
 
                 render_buffer = imlib_create_image(up_w, up_h);
                 imlib_context_set_image(render_buffer);
@@ -2107,12 +2108,16 @@ int main(int argc, char **argv)
                 imlib_context_set_image(render_buffer);
                 imlib_render_image_on_drawable(up_x, up_y);
                 imlib_free_image();
+
             }
+            
         }
+        load_logo(disp, vinfo, win, attr); // Draw Logo Last
         /* if we had updates - free them */
         if (updates)
-            imlib_updates_free(updates);
+        imlib_updates_free(updates);
         /* loop again waiting for events */
+        
     }
     return 0;
 }

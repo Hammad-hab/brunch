@@ -55,4 +55,25 @@ typedef struct percentable
     int value;
 } percentable_t;
 
+
+enum exit_code {
+    OKAY,
+    ESCAPE = 0x20,
+    RIGHTCLICK,
+    VOIDCLICK,
+    FOCUSLOST,
+    INTERNALCMD,
+    LOCKERROR = 0x40,
+    ALLOCERROR,
+    FONTERROR,
+    CONFIGERROR,
+    WINERROR,
+    LOCALEERROR,
+    INPUTMERROR,
+    INPUTCERROR,
+    POLLERROR,
+    EXTERNALERROR
+};
+
+
 #endif

@@ -1,9 +1,8 @@
 #ifndef STRUTILS
 #define STRUTILS
-
+#include "../types.h"
 #include<stdio.h>
 #include<stdlib.h>
-#include "./errutils.c"
 
 char *strtok_new(char *string, char const *delimiter)
 {

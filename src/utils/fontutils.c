@@ -11,8 +11,8 @@ int get_font_height(Imlib_Font font){
 Imlib_Font load_default_font(){
     // No font was specified, try to load some default options as a fallback
     Imlib_Font font;
-    font = imlib_load_font("OpenSans-Regular/10");
-    if (!font) font = imlib_load_font("DejaVuSans/10");
+    font = imlib_load_font("OpenSans-Regular/16");
+    if (!font) font = imlib_load_font("DejaVuSans/16");
     return font;
 }
 

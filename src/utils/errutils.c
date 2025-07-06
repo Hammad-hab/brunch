@@ -1,25 +1,10 @@
 #ifndef ERRUTIL
 #define ERRUTIL
+#define ERROR_PREFIX "...And 🍪Brunch Said: "
+#include "strutils.c"
 
-
-enum exit_code {
-    OKAY,
-    ESCAPE = 0x20,
-    RIGHTCLICK,
-    VOIDCLICK,
-    FOCUSLOST,
-    INTERNALCMD,
-    LOCKERROR = 0x40,
-    ALLOCERROR,
-    FONTERROR,
-    CONFIGERROR,
-    WINERROR,
-    LOCALEERROR,
-    INPUTMERROR,
-    INPUTCERROR,
-    POLLERROR,
-    EXTERNALERROR
-};
-
+void log_error(const char* error) {
+    fprintf(stderr, "%s", concat(ERROR_PREFIX, error));
+}
 
 #endif
