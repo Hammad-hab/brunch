@@ -3,7 +3,7 @@ CFLAGS = -I/opt/X11/include $(shell pkg-config --cflags imlib2)
 LDFLAGS = -L/opt/X11/lib $(shell pkg-config --libs imlib2) -lX11
 #CFLAGS ?= -ggdb -g3 # For debugging
 
-all: xlunch entries.dsv
+all: xlunch
 
 install: xlunch
 	mkdir -p $(DESTDIR)/etc/xlunch/
@@ -45,12 +45,7 @@ test: xlunch
 xlunch: xlunch.c
 	$(CC) xlunch.c -o xlunch $(LDFLAGS) $(CFLAGS)
 
-entries.dsv:
-	bash extra/genentries > entries.dsv
-
 clean:
 	rm -f xlunch
 	rm -f entries.dsv
 
-release:
-	bash extra/makerelease

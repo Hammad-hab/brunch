@@ -21,6 +21,12 @@
         "cursorfont.h": "c",
         "xutil.h": "c",
         "poll.h": "c",
-        "file.h": "c"
+        "file.h": "c",
+        "getopt.h": "c",
+        "unistd.h": "c",
+        "libgen.h": "c",
+        "fcntl.h": "c",
+        "xatom.h": "c",
+        "string.h": "c"
     }
 }

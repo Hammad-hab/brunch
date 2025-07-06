@@ -1,5 +1,0 @@
-[Desktop Entry]
-Name=Regenerate entries for xlunch
-Type=Application
-Exec=genentries.desktop.sh
-Icon=xlunch
