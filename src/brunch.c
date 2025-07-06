@@ -327,7 +327,7 @@ void push_entry(node_t *new_entry) //(char * title, char * icon, char * cmd, int
         {
             if (hide_missing)
                 return;
-            strcpy(new_entry->icon, "/usr/share/icons/hicolor/48x48/apps/xlunch_ghost.png");
+            strcpy(new_entry->icon, "/usr/share/icons/hicolor/48x48/apps/brunch_ghost.png");
         }
     }
 
@@ -389,7 +389,7 @@ FILE *determine_input_source()
         char *home = getenv("HOME");
         if (home != NULL)
         {
-            homeconf = concat(home, "/.config/xlunch/entries.dsv");
+            homeconf = concat(home, "/.config/brunch/entries.dsv");
         }
 
         if (strlen(input_file) == 0)
@@ -420,7 +420,7 @@ FILE *determine_input_source()
         if (fp == NULL)
         {
             fprintf(stderr, "Error getting entries from %s.\nReverting back to system entries list.\n", strlen(input_file) == 0 ? "stdin" : input_file);
-            input_file = "/etc/xlunch/entries.dsv";
+            input_file = "/etc/brunch/entries.dsv";
             fp = fopen(input_file, "rb");
 
             if (fp == NULL)
@@ -771,7 +771,7 @@ void run_command(char *cmd_orig)
     {
         // split arguments into pieces
         int i = 0;
-        // If we recur (ie. start xlunch again) run the command that was used to run xlunch
+        // If we recur (ie. start brunch again) run the command that was used to run brunch
         array[0] = program_name;
 
         // Blindly consume the first token which should be "recur"
@@ -1095,7 +1095,7 @@ void update_background_images()
 
     /* fill the window background */
     background = imlib_create_image(screen_width, screen_height);
-    // When xlunch is launched and there is another full screen window 'background' was NULL
+    // When brunch is launched and there is another full screen window 'background' was NULL
     if (background)
     {
         imlib_context_set_image(background);
@@ -1192,12 +1192,12 @@ void init(int argc, char **argv)
         char *home = getenv("HOME");
         if (home != NULL)
         {
-            homeconf = concat(home, "/.config/xlunch/xlunch.conf");
+            homeconf = concat(home, "/.config/brunch/brunch.conf");
         }
         config_source = fopen(homeconf, "rb");
         if (config_source == NULL)
         {
-            config_source = fopen("/etc/xlunch/default.conf", "rb");
+            config_source = fopen("/etc/brunch/default.conf", "rb");
         }
         free(homeconf);
         if (config_source != NULL)
@@ -1678,13 +1678,13 @@ int main(int argc, char **argv)
     if (!multiple_instances)
     {
         int oldmask = umask(0);
-        lock = open("/tmp/xlunch.lock", O_CREAT | O_RDWR, 0666);
+        lock = open("/tmp/brunch.lock", O_CREAT | O_RDWR, 0666);
         umask(oldmask);
         int rc = flock(lock, LOCK_EX | LOCK_NB);
         if (rc)
         {
             if (errno == EWOULDBLOCK)
-                fprintf(stderr, "xlunch already running. You may want to consider --multiple\nIf this is an error, you may remove /tmp/xlunch.lock\n");
+                fprintf(stderr, "brunch already running. You may want to consider --multiple\nIf this is an error, you may remove /tmp/brunch.lock\n");
             exit(LOCKERROR);
         }
     }
@@ -1742,7 +1742,7 @@ int main(int argc, char **argv)
     /* set the titlebar name */
     if (window_title == NULL)
     {
-        window_title = "xlunch: Graphical app launcher";
+        window_title = "brunch: Graphical app launcher";
     }
     XStoreName(disp, win, window_title);
 
@@ -1779,7 +1779,7 @@ int main(int argc, char **argv)
     if (classHint)
     {
         classHint->res_name = basename(program_name);
-        classHint->res_class = (windowed ? "xlunch-windowed" : (desktop_mode ? "xlunch-desktop" : "xlunch-fullscreen"));
+        classHint->res_class = (windowed ? "brunch-windowed" : (desktop_mode ? "brunch-desktop" : "brunch-fullscreen"));
     }
     XSetClassHint(disp, win, classHint);
     XFree(classHint);

@@ -2,3 +2,4 @@ entries.dsv
 svgicons/
 .vscode
 src/xlunch
+.DS_Store

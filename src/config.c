@@ -293,7 +293,7 @@ void handle_option(int c, char *optarg)
     switch (c)
     {
     case 'v':
-        fprintf(stderr, "xlunch graphical program launcher, version %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+        fprintf(stderr, "brunch graphical program launcher, version %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
         exit(OKAY);
         break;
 
