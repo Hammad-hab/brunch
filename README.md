@@ -1,7 +1,9 @@
-# brunch - Graphical Application Launcher
 
-<img src="src/bl.png" alt="brunch logo" width="128" height="128">
+<center>
+<img src="src/bl.png" alt="brunch logo" width="1024" height="1024">
+</center>
 
+# Brunch  - Graphical Application Launcher
 ## Overview
 
 brunch is an independently maintained fork of xlunch that aims to be more usable. It's a lightweight, customizable graphical application launcher for X11 systems. It provides a full-screen or windowed interface for quickly launching applications, similar to dmenu or rofi, but with a graphical icon-based interface.
