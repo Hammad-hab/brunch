@@ -9,7 +9,6 @@
 #define CONFIG
 
 void handle_option(int c, char *optarg);
-
 int icon_size = 48;
 int ucolumns = 0;
 int columns;
