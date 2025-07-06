@@ -7,6 +7,7 @@ import glob
 import configparser
 
 os.environ['DISPLAY'] = ':0'
+
 RMODE = True if len(sys.argv) > 1 else False
 
 if not os.path.isfile('./xlunch'):
@@ -15,7 +16,17 @@ if not os.path.isfile('./xlunch'):
 
 def find_linux_icon_file(icon_name):
     # Try hicolor theme sizes
-    for size in ['256x256', '128x128', '64x64', '48x48', '32x32', '16x16']:
+    svg_dirs = [
+        '/usr/share/icons/hicolor/scalable/apps',
+        '/usr/share/icons/Adwaita/scalable/apps',
+        '/usr/share/icons/Papirus/scalable/apps'
+    ]
+    for dir in svg_dirs:
+        path = f'{dir}/{icon_name}.svg'
+        if os.path.isfile(path):
+            return path
+        
+    for size in ['512x512', '256x256', '128x128', '64x64', '48x48', '32x32', '16x16']:
         path = f'/usr/share/icons/hicolor/{size}/apps/{icon_name}.png'
         if os.path.isfile(path):
             return path
@@ -24,7 +35,7 @@ def find_linux_icon_file(icon_name):
             return path
 
     # Try pixmaps
-    for ext in ['png', 'svg', 'xpm']:
+    for ext in ['svg', 'png', 'xpm']:
         path = f'/usr/share/pixmaps/{icon_name}.{ext}'
         if os.path.isfile(path):
             return path
@@ -71,6 +82,11 @@ def generate_dsv():
                 name = entry.get('Name')
                 exec_cmd = entry.get('Exec')
                 icon = entry.get('Icon')
+                terminal = entry.get('Terminal', 'false').lower()
+                nodisplay = entry.get('NoDisplay', 'false').lower()
+
+                if terminal == 'true' or nodisplay == 'true':
+                    continue
 
                 if not name or not exec_cmd:
                     continue
