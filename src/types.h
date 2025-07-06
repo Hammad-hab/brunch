@@ -1,6 +1,9 @@
 #ifndef TYPES
 #define TYPES
 
+const int VERSION_MAJOR = 4; // Major version, changes when breaking backwards compatability
+const int VERSION_MINOR = 7; // Minor version, changes when new functionality is added
+const int VERSION_PATCH = 5; // Patch version, changes when something is changed without changing deliberate functionality (eg. a bugfix or an optimisation)
 
 typedef struct node
 {
@@ -51,25 +54,5 @@ typedef struct percentable
     int percent;
     int value;
 } percentable_t;
-
-
-enum exit_code {
-    OKAY,
-    ESCAPE = 0x20,
-    RIGHTCLICK,
-    VOIDCLICK,
-    FOCUSLOST,
-    INTERNALCMD,
-    LOCKERROR = 0x40,
-    ALLOCERROR,
-    FONTERROR,
-    CONFIGERROR,
-    WINERROR,
-    LOCALEERROR,
-    INPUTMERROR,
-    INPUTCERROR,
-    POLLERROR,
-    EXTERNALERROR
-};
 
 #endif

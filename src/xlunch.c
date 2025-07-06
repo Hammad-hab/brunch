@@ -2,9 +2,6 @@
 // Licence: GNU GPL v3
 // Authors: Tomas Matejicek <www.slax.org>
 //          Peter Munch-Ellingsen <www.peterme.net>
-const int VERSION_MAJOR = 4; // Major version, changes when breaking backwards compatability
-const int VERSION_MINOR = 7; // Minor version, changes when new functionality is added
-const int VERSION_PATCH = 5; // Patch version, changes when something is changed without changing deliberate functionality (eg. a bugfix or an optimisation)
 
 #define _GNU_SOURCE
 #include <fcntl.h>
@@ -25,8 +22,10 @@ const int VERSION_PATCH = 5; // Patch version, changes when something is changed
 #include <sys/poll.h>
 #include <errno.h>
 #include "config.c"
-#include "calcutils.c"
-#include "fontutils.c"
+#include "./utils/calcutils.c"
+#include "./utils/fontutils.c"
+#include "./utils/errutils.c"
+#include "./utils/strutils.c"
 
 /* some globals for our window & X display */
 Display *disp;
@@ -38,12 +37,6 @@ struct pollfd eventfds[2];
 
 XIM im;
 XIC ic;
-
-int screen;
-int screen_width;
-int screen_height;
-
-// Let's define a linked list node:
 
 int entries_count = 0;
 node_t *entries = NULL;
@@ -66,145 +59,6 @@ Imlib_Image highlight = NULL;
 /* image variable */
 Imlib_Image image = NULL;
 
-void recalc_cells()
-{
-    int margined_cell_width, margined_cell_height;
-
-    if (text_after)
-    {
-        cell_width = icon_size + icon_padding * 2;
-        cell_height = icon_size + icon_v_padding * 2;
-        margined_cell_width = icon_size + icon_padding * 2 + least_margin;
-        margined_cell_height = icon_size + icon_v_padding * 2 + least_v_margin;
-        if (ucolumns == 0)
-            ucolumns = 1;
-    }
-    else
-    {
-        cell_width = icon_size + icon_padding * 2;
-        cell_height = icon_size + icon_v_padding * 2 + font_height + text_padding;
-        margined_cell_width = icon_size + icon_padding * 2 + least_margin;
-        margined_cell_height = icon_size + icon_v_padding * 2 + font_height + text_padding + least_v_margin;
-    }
-
-    border = screen_width / 10;
-    if (uborder.value > 0)
-        border = uborder.value;
-    if (uborder.value == -1 && uborder.percent == -1)
-    {
-        if (ucolumns == 0)
-        {
-            border = 0;
-        }
-        else
-        {
-            side_border = (screen_width - (ucolumns * cell_width + (ucolumns - 1) * least_margin)) / 2;
-            border = (screen_height - prompt_font_height - prompt_spacing - (urows * cell_height + (urows - 1) * least_v_margin)) / 2;
-        }
-    }
-
-    if (uside_border.value == 0 && uside_border.percent == -1)
-        side_border = border;
-    if (uside_border.value > 0)
-        side_border = uside_border.value;
-    if (uside_border.value == -1 && uside_border.percent == -1)
-    {
-        if (ucolumns == 0)
-        {
-            side_border = 0;
-        }
-        else
-        {
-            side_border = (screen_width - (ucolumns * cell_width + (ucolumns - 1) * least_margin)) / 2;
-        }
-    }
-
-    int usable_width;
-    int usable_height;
-    // These do while loops should run at most three times, it's just to avoid copying code
-    do
-    {
-        usable_width = screen_width - side_border * 2;
-        usable_height = screen_height - border * 2;
-        usable_height = screen_height - border * 2 - prompt_spacing - prompt_font_height;
-
-        // If the usable_width is too small, take some space away from the border
-        if (usable_width < cell_width)
-        {
-            side_border = (screen_width - cell_width - 1) / 2;
-        }
-        else if (usable_height < cell_height)
-        {
-            border = (screen_height - cell_height - prompt_spacing - prompt_font_height - 1) / 2;
-        }
-
-    } while ((usable_width < cell_width && screen_width > cell_width) || (usable_height < cell_height && screen_height > cell_height));
-
-    // just in case, make sure border is never negative
-    if (border < 0)
-        border = 0;
-    if (side_border < 0)
-        side_border = 0;
-
-    // If columns were not manually overriden, calculate the most it can possibly contain
-    if (ucolumns == 0)
-    {
-        columns = usable_width / margined_cell_width;
-    }
-    else
-    {
-        columns = ucolumns;
-    }
-    if (urows == 0)
-    {
-        rows = usable_height / margined_cell_height;
-    }
-    else
-    {
-        rows = urows;
-    }
-
-    // If we don't have space for a single column or row, force it.
-    if (columns <= 0)
-    {
-        columns = 1;
-    }
-    if (rows <= 0)
-    {
-        rows = 1;
-    }
-
-    if (text_after)
-    {
-        cell_width = (usable_width - least_margin * (columns - 1)) / columns;
-    }
-
-    // The space between the icon tiles to fill all the space
-    if (columns == 1)
-    {
-        column_margin = (usable_width - cell_width * columns);
-    }
-    else
-    {
-        column_margin = (usable_width - cell_width * columns) / (columns - 1);
-    }
-    if (rows == 1)
-    {
-        row_margin = (usable_height - cell_height * rows);
-    }
-    else
-    {
-        row_margin = (usable_height - cell_height * rows) / (rows - 1);
-    }
-
-    // These are kept in case manual positioning is reintroduced
-    prompt_x = (side_border * side_border_ratio) / 50;
-    prompt_y = (border * border_ratio) / 50;
-    /*
-    if(uside_border == 0){
-        side_border = border;
-    }*/
-}
 
 void restack()
 {
@@ -524,35 +378,6 @@ void push_entry(node_t *new_entry) //(char * title, char * icon, char * cmd, int
     entries_count++;
 }
 
-char *strtok_new(char *string, char const *delimiter)
-{
-    static char *source = NULL;
-    char *p, *riturn = 0;
-    if (string != NULL)
-        source = string;
-    if (source == NULL)
-        return NULL;
-
-    if ((p = strpbrk(source, delimiter)) != NULL)
-    {
-        *p = 0;
-        riturn = source;
-        source = ++p;
-    }
-    return riturn;
-}
-
-char *concat(const char *s1, const char *s2)
-{
-    char *result = malloc(strlen(s1) + strlen(s2) + 1); //+1 for the zero-terminator
-    if (result != 0)
-    {
-        strcpy(result, s1);
-        strcat(result, s2);
-        return result;
-    }
-    exit(ALLOCERROR);
-}
 
 FILE *determine_input_source()
 {
@@ -823,13 +648,6 @@ void filter_entries()
         current = current->next;
     }
     set_scroll_level(0);
-}
-
-int starts_with(const char *pre, const char *str)
-{
-    size_t lenpre = strlen(pre),
-           lenstr = strlen(str);
-    return lenstr < lenpre ? 0 : strncmp(pre, str, lenpre) == 0;
 }
 
 void run_command(char *cmd_orig);
@@ -1252,35 +1070,6 @@ void set_clicked(node_t *cell, int clicked)
     cell->clicked = clicked;
 }
 
-// Imlib_Font load_prompt_font()
-// {
-//     Imlib_Font font;
-//     if (strlen(prompt_font_name) == 0)
-//     {
-//         if (strlen(font_name) == 0)
-//         {
-//             font = load_default_font();
-//         }
-//         else
-//         {
-//             font = imlib_load_font(font_name);
-//         }
-//     }
-//     else
-//     {
-//         font = imlib_load_font(prompt_font_name);
-//     }
-//     if (font == NULL)
-//     {
-//         fprintf(stderr, "Prompt font %s could not be loaded! Please specify one with -F parameter\n", prompt_font_name);
-//         exit(FONTERROR);
-//     }
-
-//     if (!no_prompt)
-//         prompt_font_height = get_font_height(font);
-
-//     return font;
-// }
 
 // set background image for desktop, optionally copy it from root window,
 // and set background for highlighting items
@@ -1391,183 +1180,6 @@ void draw_text_with_shadow(int posx, int posy, char *text, color_t color)
     imlib_text_draw(posx, posy, text);
 }
 
-void handle_option(int c, char *optarg);
-
-void parse_config(FILE *input)
-{
-    int readstatus;
-    int position = 0;
-    int size = 0;
-    int eol = 0;
-    int fileline = 1;
-    char *optarg = NULL;
-    char matching[(sizeof(long_options) / sizeof(struct option)) - 1];
-    char *entries_word = "entries";
-    int matching_entries = 1;
-    int matched = '?';
-    int comment = 0;
-    memset(matching, 1, sizeof(long_options) / sizeof(struct option) - 1);
-
-    struct pollfd fds;
-    fds.fd = fileno(input);
-    fds.events = POLLIN;
-    node_t *current_entry;
-    while (poll(&fds, 1, 0))
-    {
-        char b;
-        readstatus = read(fds.fd, &b, 1);
-        if (readstatus <= 0)
-        {
-            break;
-        }
-        if ((b == ':' && optarg == NULL) || b == '\n')
-        {
-            if (b == '\n')
-                eol = 1;
-            b = '\0';
-        }
-        if (b == '#' && optarg == NULL && position == 0)
-            comment = 1;
-        if (comment == 1 && eol != 1)
-            continue;
-        if (b == ' ' && position == 0)
-            continue;
-        if (optarg == NULL)
-        {
-            for (int i = 0; i < sizeof(long_options) / sizeof(struct option) - 1; i++)
-            {
-                if (long_options[i].name[position] != b)
-                {
-                    matching[i] = 0;
-                }
-            }
-            if (entries_word[position] != b && eol != 1)
-            {
-                matching_entries = 0;
-            }
-            if (b == '\0')
-            {
-                for (int i = 0; i < sizeof(long_options) / sizeof(struct option) - 1; i++)
-                {
-                    if (matching[i] == 1)
-                    {
-                        optarg = malloc(1);
-                        position = -1;
-                        matched = long_options[i].val;
-                    }
-                }
-            }
-        }
-        else
-        {
-            optarg = realloc(optarg, ++size);
-            optarg[position] = b;
-        }
-        position++;
-        if (eol == 1)
-        {
-            if (position != 1)
-            {
-                if (matching_entries)
-                {
-                    input_source = input;
-                    break;
-                }
-                else
-                {
-                    if (matched == '?')
-                    {
-                        fprintf(stderr, "Got unknown option in config file on line %d\n", fileline);
-                    }
-                    handle_option(matched, optarg);
-                }
-            }
-            position = 0;
-            size = 0;
-            eol = 0;
-            comment = 0;
-            matching_entries = 1;
-            memset(matching, 1, sizeof(long_options) / sizeof(struct option) - 1);
-            if (optarg != NULL)
-            {
-                // free(optarg);
-                optarg = NULL;
-            }
-            matched = '?';
-            fileline++;
-        }
-    }
-    if (position > 1)
-    {
-        if (matching_entries)
-        {
-            input_source = input;
-        }
-        else
-        {
-            if (matched == '?')
-            {
-                for (int i = 0; i < sizeof(long_options) / sizeof(struct option) - 1; i++)
-                {
-                    if (matching[i] == 1)
-                    {
-                        matched = long_options[i].val;
-                        break;
-                    }
-                }
-            }
-            if (matched == '?')
-            {
-                fprintf(stderr, "Got unknown option in config file on line %d\n", fileline);
-            }
-            handle_option(matched, optarg);
-        }
-    }
-    if (input_source != input)
-        close(fds.fd);
-}
-
-void handle_option(int c, char *optarg)
-{
-    switch (c)
-    {
-    case 'v':
-        fprintf(stderr, "xlunch graphical program launcher, version %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-        exit(OKAY);
-        break;
-
-    case 'G':
-        use_root_img = 1;
-        if (background_color_set == 0)
-        {
-            background_color.r = 0;
-            background_color.g = 0;
-            background_color.b = 0;
-            background_color.a = 100;
-        }
-        break;
-
-    case 'g':
-        background_file = optarg;
-        if (background_color_set == 0)
-        {
-            background_color.r = 0;
-            background_color.g = 0;
-            background_color.b = 0;
-            background_color.a = 100;
-        }
-        break;
-
-    case 'i':
-        input_file = optarg;
-        break;
-
-    case 1014:
-        parse_config(fopen(optarg, "rb"));
-        read_config = 1;
-        break;
-    }
-}
 
 void init(int argc, char **argv)
 {
