@@ -7,6 +7,7 @@ import glob
 import configparser
 
 os.environ['DISPLAY'] = ':0'
+RMODE = True if len(sys.argv) > 1 else False
 
 if not os.path.isfile('./xlunch'):
     print('Make file not found, building app...')
@@ -14,7 +15,7 @@ if not os.path.isfile('./xlunch'):
 
 def find_linux_icon_file(icon_name):
     # Try hicolor theme sizes
-    for size in ['16x16', '32x32', '48x48', '64x64', '128x128', '256x256']:
+    for size in ['256x256', '128x128', '64x64', '48x48', '32x32', '16x16']:
         path = f'/usr/share/icons/hicolor/{size}/apps/{icon_name}.png'
         if os.path.isfile(path):
             return path
@@ -75,7 +76,7 @@ def generate_dsv():
                     continue
 
                 # Try to resolve icon file
-                icon_path = ''
+                icon_path = './broken.png'
     
                 if icon:
                     if os.path.isabs(icon) and os.path.isfile(icon):
@@ -84,7 +85,7 @@ def generate_dsv():
                         icon_path = find_linux_icon_file(icon)
 
                 if not icon_path:
-                    icon_path = ''  # fallback empty icon
+                    icon_path = './broken.png'  # fallback empty icon
 
                 # Add to DSV
                 dsv += f'{name};{icon_path};{exec_cmd}\n'
@@ -93,15 +94,15 @@ def generate_dsv():
 if not os.path.isdir('/tmp/.xlunch'):
     os.mkdir('/tmp/.xlunch')
 
-if not os.path.isfile('/tmp/.xlunch/entries.dsv'):
+if not os.path.isfile('/tmp/.xlunch/entries.dsv') or RMODE:
+    print('Generating .dsv\nThis may take a few seconds')
     dsv = generate_dsv()
     # Write the DSV file
-    MODE = '+x'
+    MODE = '+x' # Create
     if os.path.isfile('/tmp/.xlunch/entries.dsv'):
-        MODE = 'w'
+        MODE = 'w' # Write
 
     with open('/tmp/.xlunch/entries.dsv', MODE) as f:
-        print('USING MODE', MODE)
         f.write(dsv)
 
 os.system('./xlunch --input /tmp/.xlunch/entries.dsv')
