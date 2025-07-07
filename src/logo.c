@@ -26,6 +26,7 @@ int load_logo(Display* disp, XVisualInfo vinfo, Window win, XSetWindowAttributes
     imlib_context_set_image(image);
     imlib_render_image_on_drawable_at_size(0, win_attr.height-LOGO_DIMENSION*0.75, LOGO_DIMENSION, LOGO_DIMENSION);
     imlib_free_image();
+    return 0;
 }
 
 

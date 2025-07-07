@@ -85,6 +85,7 @@ color_t scrollbar_color = {.r = 255, .g = 255, .b = 255, .a = 60};
 color_t scrollindicator_color = {.r = 255, .g = 255, .b = 255, .a = 112};
 int stdin_poll_timeout = 10;
 
+// TODO Use XLunchConfig instead of vars
 struct XLunchConfig
 {
     int icon_size;
@@ -164,6 +165,85 @@ struct XLunchConfig
     int stdin_poll_timeout;
 };
 
+void initConfig(struct XLunchConfig *config) {
+    config->icon_size = 64;
+    config->ucolumns = 0;
+    config->columns = 0;
+    config->urows = 0;
+    config->rows = 0;
+    config->column_margin = 0;
+    config->row_margin = 0;
+    config->icon_padding = 40;
+    config->icon_v_padding = -1;
+    config->text_padding = 10;
+    config->border = 0;
+    config->side_border = 0;
+    config->border_ratio = 50;
+    config->side_border_ratio = 50;
+    config->cell_width = 0;
+    config->cell_height = 0;
+    config->font_height = 0;
+    config->prompt_font_height = 0;
+    config->use_root_img = 0;
+    config->commandline[0] = '\0';
+    config->commandlinetext[0] = '\0';
+    config->prompt_x = 0;
+    config->prompt_y = 0;
+    config->mouse_moves = 0;
+    config->background_file = "";
+    config->highlight_file = "";
+    config->input_file = "";
+    config->read_config = 0;
+    config->input_source = NULL;
+    config->prompt = "Search: ";
+    config->font_name = "";
+    config->prompt_font_name = "";
+    config->program_name = NULL;
+    config->window_title = NULL;
+    config->window_icon = NULL;
+    config->bg_fill = 0;
+    config->no_prompt = 0;
+    config->no_title = 0;
+    config->prompt_spacing = 48;
+    config->windowed = 0;
+    config->multiple_instances = 0;
+    config->uposx = 0;
+    config->uposy = 0;
+    config->force_reposition = 0;
+    config->uwidth = 0;
+    config->uheight = 0;
+    config->uborder.percent = -1;
+    config->uborder.value = 0;
+    config->uside_border.percent = -1;
+    config->uside_border.value = 0;
+    config->void_click_terminate = 0;
+    config->focus_lost_terminate = 0;
+    config->dont_quit = 0;
+    config->reverse = 0;
+    config->output_only = 0;
+    config->select_only = 0;
+    config->text_after = 0;
+    config->text_other_side = 0;
+    config->clear_memory = 0;
+    config->upside_down = 0;
+    config->padding_swap = 0;
+    config->least_margin = 0;
+    config->least_v_margin = -1;
+    config->hide_missing = 0;
+    config->center_icons = 0;
+    config->noscroll = 0;
+    config->scrolled_past = 0;
+    config->hovered_entry = 0;
+    config->text_color = (color_t){255, 255, 255, 255};
+    config->prompt_color = (color_t){255, 255, 255, 255};
+    config->background_color = (color_t){46, 52, 64, 102};
+    config->shadow_color = (color_t){0, 0, 0, 30};
+    config->background_color_set = 0;
+    config->highlight_color = (color_t){255, 255, 255, 50};
+    config->scrollbar_color = (color_t){255, 255, 255, 60};
+    config->scrollindicator_color = (color_t){255, 255, 255, 112};
+    config->stdin_poll_timeout = 10;
+}
 
 
 static struct option long_options[] =

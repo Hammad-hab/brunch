@@ -41,4 +41,27 @@ int starts_with(const char *pre, const char *str)
     return lenstr < lenpre ? 0 : strncmp(pre, str, lenpre) == 0;
 }
 
+
+char *strncpyutf8(char *dst, const char *src, size_t num)
+{
+    if (num)
+    {
+        size_t sizeSrc = strlen(src); // number of bytes not including null
+        while (sizeSrc > num)
+        {
+            const char *lastByte = src + sizeSrc; // initially \0 at end
+
+            while (lastByte-- > src)            // test previous chars
+                if ((*lastByte & 0xC0) != 0x80) // utf8 start byte found
+                    break;
+
+            sizeSrc = lastByte - src;
+        }
+        memcpy(dst, src, sizeSrc);
+        dst[sizeSrc] = '\0';
+    }
+    return dst;
+}
+
+
 #endif
