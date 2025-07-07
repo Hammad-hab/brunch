@@ -40,16 +40,9 @@ struct pollfd eventfds[2];
 XIM im;
 XIC ic;
 
-int entries_count = 0;
-node_t *entries = NULL;
-button_t *buttons = NULL;
-shortcut_t *shortcuts = NULL;
-keynode_t *cmdline = NULL;
-
 #define MOUSE 1
 #define KEYBOARD 2
 int hoverset = MOUSE;
-int desktop_mode = 0;
 int lock;
 
 /* areas to update */
@@ -287,7 +280,6 @@ Imlib_Image load_image(char *icon)
            log_error("IMLIB_LOAD_ERROR_UNKNOWN");
             break;
         }
-       log_error("\n");
         /*
         cleanup();
         exit(1);*/
@@ -967,78 +959,6 @@ int parse_entries()
     return changed;
 }
 
-void parse_button(char *button_spec)
-{
-    int parsing = 0;  // section currently being read
-    int position = 0; // position in the current entry
-    int i = 0;
-    button_t *new_button = malloc(sizeof(button_t));
-    char b = button_spec[0];
-    char x[256];
-    char y[256];
-    while (b != '\0')
-    {
-        if ((b == ';' && parsing != 4) || (parsing == 2 && b == ','))
-        {
-            b = '\0';
-        }
-        switch (parsing)
-        {
-        case 0:
-            new_button->icon_normal[position] = b;
-            break;
-        case 1:
-            new_button->icon_highlight[position] = b;
-            break;
-        case 2:
-            x[position] = b;
-            break;
-        case 3:
-            y[position] = b;
-            break;
-        case 4:
-            new_button->cmd[position] = b;
-            break;
-        }
-        position++;
-        if (b == '\0')
-        {
-            position = 0;
-            parsing++;
-        }
-        int maxlen = (parsing == 4 ? 511 : 255);
-        if (position == maxlen)
-        {
-            fprintf(stderr, "Entry too long, maximum length is %d characters!\n", maxlen);
-            break;
-        }
-        i++;
-        b = button_spec[i];
-    }
-    if (x[0] == '-')
-    {
-        new_button->x = atoi(x) - 1;
-    }
-    else
-    {
-        new_button->x = atoi(x);
-    }
-    if (y[0] == '-')
-    {
-        new_button->y = atoi(y) - 1;
-    }
-    else
-    {
-        new_button->y = atoi(y);
-    }
-    imlib_context_set_image(imlib_load_image(new_button->icon_normal));
-    new_button->w = imlib_image_get_width();
-    new_button->h = imlib_image_get_height();
-    imlib_free_image();
-    new_button->cmd[position] = '\0';
-    new_button->next = buttons;
-    buttons = new_button;
-}
 
 void set_clicked(node_t *cell, int clicked)
 {

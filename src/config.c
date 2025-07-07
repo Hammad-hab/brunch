@@ -4,11 +4,13 @@
 #include <sys/poll.h>
 #include "types.h"
 #include "./utils/errutils.c"
-
+#include "./utils/help.c"
 #ifndef CONFIG
 #define CONFIG
 
 void handle_option(int c, char *optarg);
+void parse_button(char *button_spec);
+
 int icon_size = 64;
 int ucolumns = 0;
 int columns;
@@ -84,170 +86,17 @@ color_t highlight_color = {.r = 255, .g = 255, .b = 255, .a = 50};
 color_t scrollbar_color = {.r = 255, .g = 255, .b = 255, .a = 60};
 color_t scrollindicator_color = {.r = 255, .g = 255, .b = 255, .a = 112};
 int stdin_poll_timeout = 10;
-
-// TODO Use XLunchConfig instead of vars
-struct XLunchConfig
-{
-    int icon_size;
-    int ucolumns;
-    int columns;
-    int urows;
-    int rows;
-    int column_margin;
-    int row_margin;
-    int icon_padding;
-    int icon_v_padding;
-    int text_padding;
-    int border;
-    int side_border;
-    int border_ratio;
-    int side_border_ratio;
-    int cell_width;
-    int cell_height;
-    int font_height;
-    int prompt_font_height;
-    int use_root_img;
-    char commandline[10024];
-    char commandlinetext[10024];
-    int prompt_x;
-    int prompt_y;
-    int mouse_moves;
-    char *background_file;
-    char *highlight_file;
-    char *input_file;
-    int read_config;
-    FILE *input_source;
-    char *prompt;
-    char *font_name;
-    char *prompt_font_name;
-    char *program_name;
-    char *window_title;
-    char *window_icon;
-    int bg_fill;
-    int no_prompt;
-    int no_title;
-    int prompt_spacing;
-    int windowed;
-    int multiple_instances;
-    int uposx;
-    int uposy;
-    int force_reposition;
-    int uwidth;
-    int uheight;
-    percentable_t uborder;
-    percentable_t uside_border;
-    int void_click_terminate;
-    int focus_lost_terminate;
-    int dont_quit;
-    int reverse;
-    int output_only;
-    int select_only;
-    int text_after;
-    int text_other_side;
-    int clear_memory;
-    int upside_down;
-    int padding_swap;
-    int least_margin;
-    int least_v_margin;
-    int hide_missing;
-    int center_icons;
-    int noscroll;
-    int scrolled_past;
-    int hovered_entry;
-    color_t text_color;
-    color_t prompt_color;
-    color_t background_color;
-    color_t shadow_color;
-    int background_color_set;
-    color_t highlight_color;
-    color_t scrollbar_color;
-    color_t scrollindicator_color;
-    int stdin_poll_timeout;
-};
-
-void initConfig(struct XLunchConfig *config) {
-    config->icon_size = 64;
-    config->ucolumns = 0;
-    config->columns = 0;
-    config->urows = 0;
-    config->rows = 0;
-    config->column_margin = 0;
-    config->row_margin = 0;
-    config->icon_padding = 40;
-    config->icon_v_padding = -1;
-    config->text_padding = 10;
-    config->border = 0;
-    config->side_border = 0;
-    config->border_ratio = 50;
-    config->side_border_ratio = 50;
-    config->cell_width = 0;
-    config->cell_height = 0;
-    config->font_height = 0;
-    config->prompt_font_height = 0;
-    config->use_root_img = 0;
-    config->commandline[0] = '\0';
-    config->commandlinetext[0] = '\0';
-    config->prompt_x = 0;
-    config->prompt_y = 0;
-    config->mouse_moves = 0;
-    config->background_file = "";
-    config->highlight_file = "";
-    config->input_file = "";
-    config->read_config = 0;
-    config->input_source = NULL;
-    config->prompt = "Search: ";
-    config->font_name = "";
-    config->prompt_font_name = "";
-    config->program_name = NULL;
-    config->window_title = NULL;
-    config->window_icon = NULL;
-    config->bg_fill = 0;
-    config->no_prompt = 0;
-    config->no_title = 0;
-    config->prompt_spacing = 48;
-    config->windowed = 0;
-    config->multiple_instances = 0;
-    config->uposx = 0;
-    config->uposy = 0;
-    config->force_reposition = 0;
-    config->uwidth = 0;
-    config->uheight = 0;
-    config->uborder.percent = -1;
-    config->uborder.value = 0;
-    config->uside_border.percent = -1;
-    config->uside_border.value = 0;
-    config->void_click_terminate = 0;
-    config->focus_lost_terminate = 0;
-    config->dont_quit = 0;
-    config->reverse = 0;
-    config->output_only = 0;
-    config->select_only = 0;
-    config->text_after = 0;
-    config->text_other_side = 0;
-    config->clear_memory = 0;
-    config->upside_down = 0;
-    config->padding_swap = 0;
-    config->least_margin = 0;
-    config->least_v_margin = -1;
-    config->hide_missing = 0;
-    config->center_icons = 0;
-    config->noscroll = 0;
-    config->scrolled_past = 0;
-    config->hovered_entry = 0;
-    config->text_color = (color_t){255, 255, 255, 255};
-    config->prompt_color = (color_t){255, 255, 255, 255};
-    config->background_color = (color_t){46, 52, 64, 102};
-    config->shadow_color = (color_t){0, 0, 0, 30};
-    config->background_color_set = 0;
-    config->highlight_color = (color_t){255, 255, 255, 50};
-    config->scrollbar_color = (color_t){255, 255, 255, 60};
-    config->scrollindicator_color = (color_t){255, 255, 255, 112};
-    config->stdin_poll_timeout = 10;
-}
+int desktop_mode = 0;
+int entries_count = 0;
+node_t *entries = NULL;
+button_t *buttons = NULL;
+shortcut_t *shortcuts = NULL;
+keynode_t *cmdline = NULL;
 
 
 static struct option long_options[] =
     {
+
         {"tc", required_argument, 0, 1009},
         {"textcolor", required_argument, 0, 1009},
         {"pc", required_argument, 0, 1010},
@@ -449,46 +298,403 @@ void parse_config(FILE *input)
         close(fds.fd);
 }
 
-void handle_option(int c, char *optarg)
-{
-    switch (c)
-    {
-    case 'v':
-        fprintf(stderr, "brunch graphical program launcher, version %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-        exit(OKAY);
-        break;
+void handle_option(int c, char *optarg) {
+    switch (c) {
+        case 'v':
+            fprintf(stderr, "xlunch graphical program launcher, version %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+            exit(OKAY);
 
-    case 'G':
-        use_root_img = 1;
-        if (background_color_set == 0)
-        {
-            background_color.r = 0;
-            background_color.g = 0;
-            background_color.b = 0;
-            background_color.a = 100;
-        }
-        break;
+        case 'd':
+            desktop_mode = 1;
+            break;
 
-    case 'g':
-        background_file = optarg;
-        if (background_color_set == 0)
-        {
-            background_color.r = 0;
-            background_color.g = 0;
-            background_color.b = 0;
-            background_color.a = 100;
-        }
-        break;
+        case 'G':
+            use_root_img = 1;
+            if(background_color_set == 0){
+                background_color.r = 0;
+                background_color.g = 0;
+                background_color.b = 0;
+                background_color.a = 100;
+            }
+            break;
 
-    case 'i':
-        input_file = optarg;
-        break;
+        case 'n':
+            no_prompt = 1;
+            prompt_spacing = 0;
+            prompt_font_height = 0;
+            break;
 
-    case 1014:
-        parse_config(fopen(optarg, "rb"));
-        read_config = 1;
-        break;
+        case 'N':
+            no_title = 1;
+            font_height = 0;
+            text_padding = 0;
+            break;
+
+        case 'g':
+            background_file = optarg;
+            if(background_color_set == 0){
+                background_color.r = 0;
+                background_color.g = 0;
+                background_color.b = 0;
+                background_color.a = 100;
+            }
+            break;
+
+        case 'L':
+            highlight_file = optarg;
+            break;
+
+        case 'I':
+            icon_padding = atoi(optarg);
+            break;
+
+        case 1020:
+            icon_v_padding = atoi(optarg);
+            break;
+
+        case 'T':
+            text_padding = atoi(optarg);
+            break;
+
+        case 'c':
+            ucolumns = atoi(optarg);
+            break;
+
+        case 'r':
+            urows = atoi(optarg);
+            break;
+
+        case 'b':
+            if(strcmp(optarg, "auto") == 0){
+                uborder.value = -1;
+            } else {
+                if (optarg[strlen(optarg)-1] == '%') {
+                    uborder.percent = atoi(optarg);
+                } else {
+                    uborder.value = atoi(optarg);
+                }
+            }
+            break;
+
+        case 'B':
+            if(strcmp(optarg, "auto") == 0){
+                uside_border.value = -1;
+            } else {
+                if (optarg[strlen(optarg)-1] == '%') {
+                    uside_border.percent = atoi(optarg);
+                } else {
+                    uside_border.value = atoi(optarg);
+                }
+            }
+            break;
+
+        case 'P':
+            prompt_spacing = atoi(optarg);
+            break;
+
+        case 's':
+            icon_size = atoi(optarg);
+            break;
+
+        case 'i':
+            input_file = optarg;
+            break;
+
+        case 'W':
+            windowed = 1;
+            break;
+
+        case 'p':
+            prompt = optarg;
+            break;
+
+        case 'f':
+            font_name = optarg;
+            break;
+
+        case 'F':
+            prompt_font_name = optarg;
+            break;
+
+        case 'm':
+            multiple_instances = 1;
+            break;
+
+        case 't':
+            void_click_terminate = 1;
+            break;
+
+        case 'x':
+            uposx = atoi(optarg);
+            force_reposition = 1;
+            break;
+
+        case 'y':
+            uposy = atoi(optarg);
+            force_reposition = 1;
+            break;
+
+        case 'w':
+            uwidth = atoi(optarg);
+            break;
+
+        case 'h':
+            uheight = atoi(optarg);
+            break;
+
+        case 'o':
+            output_only = 1;
+            break;
+
+        case 'S':
+            select_only = 1;
+            break;
+
+        case 1009:
+            sscanf(optarg, "%02x%02x%02x%02x", &text_color.r, &text_color.g, &text_color.b, &text_color.a);
+            break;
+
+        case 1010:
+            sscanf(optarg, "%02x%02x%02x%02x", &prompt_color.r, &prompt_color.g, &prompt_color.b, &prompt_color.a);
+            break;
+
+        case 1011:
+            sscanf(optarg, "%02x%02x%02x%02x", &background_color.r, &background_color.g, &background_color.b, &background_color.a);
+            background_color_set = 1;
+            break;
+
+        case 1021:
+            sscanf(optarg, "%02x%02x%02x%02x", &shadow_color.r, &shadow_color.g, &shadow_color.b, &shadow_color.a);
+            break;
+
+        case 1012:
+            sscanf(optarg, "%02x%02x%02x%02x", &highlight_color.r, &highlight_color.g, &highlight_color.b, &highlight_color.a);
+            break;
+
+        case 1023:
+            sscanf(optarg, "%02x%02x%02x%02x", &scrollbar_color.r, &scrollbar_color.g, &scrollbar_color.b, &scrollbar_color.a);
+            break;
+
+        case 1024:
+            sscanf(optarg, "%02x%02x%02x%02x", &scrollindicator_color.r, &scrollindicator_color.g, &scrollindicator_color.b, &scrollindicator_color.a);
+            break;
+
+        case 'a':
+            text_after = 1;
+            break;
+
+        case 1013:
+            program_name = optarg;
+            break;
+
+        case 1022:
+            window_title = optarg;
+            break;
+
+        case 1025:
+            window_icon = optarg;
+            break;
+
+        case 'q':
+            dont_quit = 1;
+            break;
+
+        case 'R':
+            reverse = 1;
+            break;
+
+        case 'O':
+            text_other_side = 1;
+            break;
+
+        case 'M':
+            clear_memory = 1;
+            break;
+
+        case 'u':
+            upside_down = 1;
+            break;
+
+        case 'X':
+            padding_swap = 1;
+            break;
+
+        case 'l':
+            least_margin = atoi(optarg);
+            break;
+
+        case 'V':
+            least_v_margin = atoi(optarg);
+            break;
+
+        case 'C':
+            center_icons = 1;
+            break;
+
+        case 'e':
+            hide_missing = 1;
+            break;
+
+        case 'A':
+            parse_button(optarg);
+            break;
+
+        case 'U': ;
+            unsigned char lb = optarg[0];
+            int i = 0;
+            shortcut_t *current_shortcut = NULL;
+            while (lb != '\0') {
+                if ( current_shortcut == NULL ) {
+                    current_shortcut = malloc(sizeof(shortcut_t));
+                } else {
+                    current_shortcut->next = malloc(sizeof(shortcut_t));
+                    current_shortcut = current_shortcut->next;
+                }
+                if ( shortcuts == NULL)
+                    shortcuts = current_shortcut;
+                current_shortcut->entry = NULL;
+                current_shortcut->next = NULL;
+                if (( lb & 0x80 ) == 0 ) {          // lead bit is zero, must be a single ascii
+                    current_shortcut->key = malloc(sizeof(char));
+                    memcpy(current_shortcut->key, &optarg[i], sizeof(char));
+                    i+=1;
+                } else if (( lb & 0xE0 ) == 0xC0 ) {  // 110x xxxx
+                    current_shortcut->key = malloc(sizeof(char)*2);
+                    memcpy(current_shortcut->key, &optarg[i], sizeof(char)*2);
+                    i+=2;
+                } else if (( lb & 0xF0 ) == 0xE0 ) { // 1110 xxxx
+                    current_shortcut->key = malloc(sizeof(char)*3);
+                    memcpy(current_shortcut->key, &optarg[i], sizeof(char)*3);
+                    i+=3;
+                } else if (( lb & 0xF8 ) == 0xF0 ) { // 1111 0xxx
+                    current_shortcut->key = malloc(sizeof(char)*4);
+                    memcpy(current_shortcut->key, &optarg[i], sizeof(char)*4);
+                    i+=4;
+                } else {
+                   printf( "Unrecognized lead byte in shortcut (%02x)\n", lb );
+                }
+                lb = optarg[i];
+            }
+            break;
+
+        case 1014:
+            parse_config(fopen(optarg, "rb"));
+            read_config = 1;
+            break;
+            
+        case 1015:
+            bg_fill = 1;
+            break;
+
+        case 1016:
+            focus_lost_terminate = 1;
+            break;
+
+        case 1017:
+            border_ratio = atoi(optarg);
+            break;
+
+        case 1018:
+            side_border_ratio = atoi(optarg);
+            break;
+
+        case 1019:
+            noscroll = 1;
+            break;
+
+        case '?':
+            fprintf(stderr, "See --help for usage documentation\n");
+            exit(CONFIGERROR);
+            break;
+
+        case 1026:
+            stdin_poll_timeout = atoi(optarg);
+            break;
+
+
+        case 'H':
+            fprintf (stderr, HELP);
+            // Check if we came from the error block above or if this was a call with --help
+            if(c == '?'){
+                exit(CONFIGERROR);
+            } else {
+                exit(OKAY);
+            }
+            break;
     }
+}
+
+void parse_button(char *button_spec)
+{
+    int parsing = 0;  // section currently being read
+    int position = 0; // position in the current entry
+    int i = 0;
+    button_t *new_button = malloc(sizeof(button_t));
+    char b = button_spec[0];
+    char x[256];
+    char y[256];
+    while (b != '\0')
+    {
+        if ((b == ';' && parsing != 4) || (parsing == 2 && b == ','))
+        {
+            b = '\0';
+        }
+        switch (parsing)
+        {
+        case 0:
+            new_button->icon_normal[position] = b;
+            break;
+        case 1:
+            new_button->icon_highlight[position] = b;
+            break;
+        case 2:
+            x[position] = b;
+            break;
+        case 3:
+            y[position] = b;
+            break;
+        case 4:
+            new_button->cmd[position] = b;
+            break;
+        }
+        position++;
+        if (b == '\0')
+        {
+            position = 0;
+            parsing++;
+        }
+        int maxlen = (parsing == 4 ? 511 : 255);
+        if (position == maxlen)
+        {
+            fprintf(stderr, "Entry too long, maximum length is %d characters!\n", maxlen);
+            break;
+        }
+        i++;
+        b = button_spec[i];
+    }
+    if (x[0] == '-')
+    {
+        new_button->x = atoi(x) - 1;
+    }
+    else
+    {
+        new_button->x = atoi(x);
+    }
+    if (y[0] == '-')
+    {
+        new_button->y = atoi(y) - 1;
+    }
+    else
+    {
+        new_button->y = atoi(y);
+    }
+    imlib_context_set_image(imlib_load_image(new_button->icon_normal));
+    new_button->w = imlib_image_get_width();
+    new_button->h = imlib_image_get_height();
+    imlib_free_image();
+    new_button->cmd[position] = '\0';
+    new_button->next = buttons;
+    buttons = new_button;
 }
 
 int screen;
