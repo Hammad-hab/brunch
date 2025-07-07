@@ -85,6 +85,87 @@ color_t scrollbar_color = {.r = 255, .g = 255, .b = 255, .a = 60};
 color_t scrollindicator_color = {.r = 255, .g = 255, .b = 255, .a = 112};
 int stdin_poll_timeout = 10;
 
+struct XLunchConfig
+{
+    int icon_size;
+    int ucolumns;
+    int columns;
+    int urows;
+    int rows;
+    int column_margin;
+    int row_margin;
+    int icon_padding;
+    int icon_v_padding;
+    int text_padding;
+    int border;
+    int side_border;
+    int border_ratio;
+    int side_border_ratio;
+    int cell_width;
+    int cell_height;
+    int font_height;
+    int prompt_font_height;
+    int use_root_img;
+    char commandline[10024];
+    char commandlinetext[10024];
+    int prompt_x;
+    int prompt_y;
+    int mouse_moves;
+    char *background_file;
+    char *highlight_file;
+    char *input_file;
+    int read_config;
+    FILE *input_source;
+    char *prompt;
+    char *font_name;
+    char *prompt_font_name;
+    char *program_name;
+    char *window_title;
+    char *window_icon;
+    int bg_fill;
+    int no_prompt;
+    int no_title;
+    int prompt_spacing;
+    int windowed;
+    int multiple_instances;
+    int uposx;
+    int uposy;
+    int force_reposition;
+    int uwidth;
+    int uheight;
+    percentable_t uborder;
+    percentable_t uside_border;
+    int void_click_terminate;
+    int focus_lost_terminate;
+    int dont_quit;
+    int reverse;
+    int output_only;
+    int select_only;
+    int text_after;
+    int text_other_side;
+    int clear_memory;
+    int upside_down;
+    int padding_swap;
+    int least_margin;
+    int least_v_margin;
+    int hide_missing;
+    int center_icons;
+    int noscroll;
+    int scrolled_past;
+    int hovered_entry;
+    color_t text_color;
+    color_t prompt_color;
+    color_t background_color;
+    color_t shadow_color;
+    int background_color_set;
+    color_t highlight_color;
+    color_t scrollbar_color;
+    color_t scrollindicator_color;
+    int stdin_poll_timeout;
+};
+
+
+
 static struct option long_options[] =
     {
         {"tc", required_argument, 0, 1009},
