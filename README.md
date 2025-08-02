@@ -93,7 +93,7 @@ sudo dnf install imlib2-devel libX11-devel
 
 **macOS:**
 ```bash
-brew install imlib2 x11
+brew install imlib2 x11 xquartz
 ```
 
 ### Building
