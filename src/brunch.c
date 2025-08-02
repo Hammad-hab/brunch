@@ -517,6 +517,7 @@ void joincmdline()
     }
 }
 
+
 void joincmdlinetext()
 {
     if (no_prompt)
@@ -533,7 +534,7 @@ void joincmdlinetext()
         current = current->next;
     }
 
-    strcat(commandlinetext, "_");
+    strcat(commandlinetext, "|");
 }
 
 void set_scroll_level(int new_scroll)
@@ -2012,7 +2013,6 @@ int main(int argc, char **argv)
             }
             
         }
-        load_logo(disp, vinfo, win, attr); // Draw Logo Last
         /* if we had updates - free them */
         if (updates)
         imlib_updates_free(updates);

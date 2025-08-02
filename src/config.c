@@ -16,8 +16,8 @@ int ucolumns = 0;
 int columns;
 int urows = 0;
 int rows;
-int column_margin = 0;
-int row_margin = 0;
+int column_margin = 2;
+int row_margin = 2;
 int icon_padding = 40;
 int icon_v_padding = -1;
 int text_padding = 10;
@@ -83,7 +83,7 @@ color_t background_color = {.r = 46, .g = 52, .b = 64, .a = 102};
 color_t shadow_color = {.r = 0, .g = 0, .b = 0, .a = 30};
 int background_color_set = 0;
 color_t highlight_color = {.r = 255, .g = 255, .b = 255, .a = 50};
-color_t scrollbar_color = {.r = 255, .g = 255, .b = 255, .a = 60};
+color_t scrollbar_color = {.r = 255, .g = 255, .b = 0., .a = 60};
 color_t scrollindicator_color = {.r = 255, .g = 255, .b = 255, .a = 112};
 int stdin_poll_timeout = 10;
 int desktop_mode = 0;
@@ -283,7 +283,7 @@ void parse_config(FILE *input)
                     if (matching[i] == 1)
                     {
                         matched = long_options[i].val;
-                        break;
+                       break;
                     }
                 }
             }
